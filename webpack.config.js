@@ -3,7 +3,7 @@ const path = require('path');
 module.exports = {
   mode: 'production',
   entry: {
-    shortener: './src/url-shortener/index.js'
+    shortener: './src/modules/url-shortener/index.js'
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
