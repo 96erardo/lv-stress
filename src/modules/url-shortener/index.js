@@ -1,13 +1,17 @@
 import http from 'k6/http';
-import { check } from 'k6';
 import { Rate } from 'k6/metrics';
 import { randomIntBetween } from "https://jslib.k6.io/k6-utils/1.0.0/index.js";
 
 const failRate = new Rate('failed request');
 
 export let options = {
+  stages: [
+    { duration: '5s', target: 10 },
+    { duration: '3m', target: 120 },
+    { duration: '2m', target: 300 },
+  ],
   thresholds: {
-    ['failed request']: ['rate<0.1']
+    ['failed request']: ['rate<0.05']
   }
 }
 
@@ -39,16 +43,20 @@ export function setup () {
 }
 
 export default function (data) {  
-  const index = randomIntBetween(0, data.length - 1);
-  const { [index]: shortUrl } = data;
+  let first = randomIntBetween(0, data.length - 1);
+  let second = randomIntBetween(0, data.length - 1);
+  let third = randomIntBetween(0, data.length - 1);
+  const { 
+    [first]: shortUrl1,
+    [second]: shortUrl2,
+    [third]: shortUrl3,
+  } = data;
 
-  console.log('index', index);
-  
-  let res = http.get(`${__ENV.SHORTENER_URL}/${shortUrl.path}`, { redirects: 0 });
+  let responses = http.batch([
+    [ 'GET', `${__ENV.SHORTENER_URL}/${shortUrl1.path}`, null, { redirects: 0 } ],
+    [ 'GET', `${__ENV.SHORTENER_URL}/${shortUrl2.path}`, null, { redirects: 0 } ],
+    [ 'GET', `${__ENV.SHORTENER_URL}/${shortUrl3.path}`, null, { redirects: 0 } ],
+  ]);
 
-  check(res, {
-    ['is status 302']: (r) => r.status === 302
-  });
-
-  failRate.add(res.error_code !== 0);
+  responses.forEach(res => failRate.add(res.error_code !== 0));
 }
