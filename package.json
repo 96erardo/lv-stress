@@ -18,5 +18,10 @@
     "k6": "0.0.0",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12"
+  },
+  "dependencies": {
+    "apollo-client": "^2.6.10",
+    "apollo-link-http": "^1.5.17",
+    "graphql-tag": "^2.11.0"
   }
 }
